@@ -6,23 +6,12 @@
 #include <windows.h>
 
 #include "DataFormat.h"
+#include "SocketUDP.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 
 
 // MACROS
-//
-typedef struct SockInterfaceStruct {
-	SOCKET      hSock;
-	SOCKADDR_IN hServAddr;
-
-    // Recv will fill this
-    sockaddr hClientAddr;
-    int      iLenClientAddr;
-
-	int    iPortNum;
-	char   cIPAddr[16];
-} SockObject;
 
 //
 // GTMap needs:
@@ -61,6 +50,7 @@ int GTMapInput_GetRequest(GTMapObject *pGTMapObj);
 
 // GTMap output processing function declarations
 // Network related API declarations
+int SocketUDP_PrintIpPort(SOCKET *phSock, const char *pTagName);
 int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
     sockaddr *pSockCliAddr, int *pSockSize);
 

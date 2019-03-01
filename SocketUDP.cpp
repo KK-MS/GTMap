@@ -13,8 +13,9 @@
 #include <winsock2.h>
 #include <ws2tcpip.h> // getaddrinfo, includes #include <winsock2.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "DataFormat.h"
+#include "SocketUDP.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -24,21 +25,25 @@
 #define MAX_UDP_DATA_SIZE (65000u)
 #endif
 
-// 
-// Server with UDP connection
-//
-#ifndef SOCK_PORT_GTMAP
-#define SOCK_PORT_GTMAP  (27016)
-#endif
-#ifndef SOCK_IP_GTMAP
-#define SOCK_IP_GTMAP    "127.0.0.1" 
-#endif
-
 #define TAG_SOCK "GTSock: "
 
 // Socket static variable
 static SOCKET s;
 static SOCKADDR_IN servaddr;
+
+int SocketUDP_PrintIpPort(SOCKET *phSock, const char *pTagName) 
+{
+	struct sockaddr_in sin;
+	int len = sizeof(sin);
+
+	if (getsockname(*phSock, (struct sockaddr *)&sin, &len) == -1) {
+		perror("getsockname");
+		return -1;
+	}
+
+	printf(TAG_SOCK"[%s] IP:Port %s:%d\n", pTagName, inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
+	return 0;
+}
 
 int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
     sockaddr *pSockCliAddr, int *pSockSize) 
@@ -53,8 +58,7 @@ int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
   pRecvBuf = pDataBuf;
   iAccRxLen = 0;
 
-  while(iAccRxLen < iDataSize) 
-  {
+  while(iAccRxLen < iDataSize) {
 
     iRxLen = iDataSize - iAccRxLen;
 
@@ -62,7 +66,7 @@ int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
 
     printf(TAG_SOCK "B4 RecvFrom: len:%d AccLen:%d\n", iRxLen, iAccRxLen);
     iRetVal = recvfrom(*phSock, pRecvBuf, iRxLen, 0, pSockCliAddr, pSockSize);
-	
+	SocketUDP_PrintIpPort(phSock, "RecvFrom");
 	if (iRetVal < 0) { return -1; }
 
     pRecvBuf  += iRetVal;
@@ -76,7 +80,7 @@ int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
 }
 
 int SocketUDP_SendTo(SOCKET *phSock, char *pDataBuf, int iDataSize, 
-    sockaddr *pSockClientAddr, int iSockSize) 
+    sockaddr *pSockDestAddr, int iSockSize) 
 {
 
   int iRetVal;
@@ -96,7 +100,7 @@ int SocketUDP_SendTo(SOCKET *phSock, char *pDataBuf, int iDataSize,
     if (iTxLen > MAX_UDP_DATA_SIZE) { iTxLen = MAX_UDP_DATA_SIZE; }
 
     //printf(TAG_SOCK "SendTo %l\n", iTxLen);
-    iRetVal = sendto(*phSock, pSendBuf, iTxLen, 0, pSockClientAddr, iSockSize);
+    iRetVal = sendto(*phSock, pSendBuf, iTxLen, 0, pSockDestAddr, iSockSize);
     if (iRetVal < 0) { return -1; }
 
     pSendBuf  += iRetVal;
@@ -112,15 +116,25 @@ int SocketUDP_SendTo(SOCKET *phSock, char *pDataBuf, int iDataSize,
   return iAccTxLen;
 }
 
-int SocketUDP_ClientRecv(SOCKET *phSock, char *pDataBuf, int iDataSize)
+int SocketUDP_ClientRecv(SockObject *pSockObj, char *pDataBuf, int iDataSize)
 {
-  return SocketUDP_RecvFrom(phSock, pDataBuf, iDataSize, NULL, NULL);
+  SOCKET *phSock      = &pSockObj->hSock;
+  sockaddr *phCliAddr = &pSockObj->hClientAddr;
+  int *pSockSize      = &pSockObj->iLenClientAddr;
+
+  return SocketUDP_RecvFrom(phSock, pDataBuf, iDataSize, phCliAddr, pSockSize);
+
 }
 
 
-int SocketUDP_ClientSend(SOCKET *phSock, char *pDataBuf, int iDataSize)
+int SocketUDP_ClientSend(SockObject *pSockObj, char *pDataBuf, int iDataSize)
 {
-  return SocketUDP_SendTo(phSock, pDataBuf, iDataSize, NULL, 0);
+	SOCKET *phSock = &pSockObj->hSock;
+	sockaddr *phCliAddr = &pSockObj->hClientAddr;
+	int iSockSize = pSockObj->iLenClientAddr;
+
+  return SocketUDP_SendTo(phSock, pDataBuf, iDataSize, (sockaddr *)phCliAddr, iSockSize);
+
 }
 
 int SocketUDP_Deinit(SOCKET *phSock)
@@ -182,9 +196,8 @@ int SocketUDP_InitServer(SOCKET *phSock, SOCKADDR_IN *phServAddr,
   memset(phServAddr, 0, sizeof(SOCKADDR_IN));
 
   phServAddr->sin_family      = AF_INET;
-  phServAddr->sin_port = htons(iPortNum); //Port to connect on
   phServAddr->sin_addr.s_addr = inet_addr(pServerIP);
-  phServAddr->sin_port        = IPPROTO_UDP;
+  phServAddr->sin_port = htons(iPortNum);
 
   *phSock = socket(AF_INET, SOCK_DGRAM, 0);
   if (*phSock == INVALID_SOCKET) { goto ret_err; }
@@ -205,7 +218,7 @@ ret_err:
 
 }
 
-
+#if 0
 int SocketUDP_ServerInit()
 {
   WSADATA wsaData;
@@ -241,7 +254,7 @@ int SocketUDP_ServerInit()
 
   return 0;
 }
-
+#endif
 
 // Error code links:
 // https://docs.microsoft.com/en-us/windows/desktop/debug/system-error-codes--0-499-
@@ -249,6 +262,15 @@ int SocketUDP_ServerInit()
 // https://docs.microsoft.com/de-de/windows/desktop/WinSock/windows-sockets-error-codes-2
 // WSAEINTR 10004: Interrupted function call. 
 //    A blocking operation was interrupted by a call to WSACancelBlockingCall.
+// WSAEACCES 10013: Permission denied.
+//    An attempt was made to access a socket in a way forbidden by its access permissions.
+//    An example is using a broadcast address for sendto without broadcast permission being set using setsockopt(SO_BROADCAST).
+//    Another possible reason for the WSAEACCES error is that when the bind 
+//    function is called(on Windows NT 4.0 with SP4 and later), another 
+//    application, service, or kernel mode driver is bound to the same address
+//    with exclusive access. Such exclusive access is a new feature of Windows 
+//    NT 4.0 with SP4 and later, and is implemented by using the 
+//    SO_EXCLUSIVEADDRUSE option.
 // WSAEFAULT 10014: Bad address. The system detected an invalid pointer address 
 //    in attempting to use a pointer argument of a call. 
 //    This error occurs if an application passes an invalid pointer value, 

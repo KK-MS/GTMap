@@ -54,9 +54,9 @@ int GTMapInput_GetRequest(GTMapObject *pGTMapObj)
   //sockaddr sockClientAddr;
   //int iLenSockClient = sizeof(sockaddr_in);
   SOCKET *phSock;
-  sockaddr *phClientAddr;
+  sockaddr *phCliAddr;
 
-  int *piLenCliAddr;
+  int *piLenAddr;
   int iPktLen;
   char *pPktBuf;
 
@@ -71,25 +71,25 @@ int GTMapInput_GetRequest(GTMapObject *pGTMapObj)
   // Assign the object pointers
   pGTMapPkt  = pGTMapObj->pGTMapPacket;
   phSock     = &(pGTMapObj->hSockObj.hSock);
+  //phSockObj  = &(pLocObj->hSockStereo);
 
   // Recv client details
-  phClientAddr = &(pGTMapObj->hSockObj.hClientAddr);
-  piLenCliAddr = &(pGTMapObj->hSockObj.iLenClientAddr);
+  phCliAddr = &(pGTMapObj->hSockObj.hClientAddr);
+  piLenAddr = &(pGTMapObj->hSockObj.iLenClientAddr);
 
   // streaming buffer address and its length
   pPktBuf = (char *)pGTMapPkt;
   iPktLen = sizeof(GTMapPacket);
 
-  *piLenCliAddr = sizeof(sockaddr_in);
+  *piLenAddr = sizeof(sockaddr_in);
 
   // RECEIVE STEREO PACKET DATA
-  //iRetVal = SocketUDP_ClientRecv(phSock, pPktBuf, iPktLen);
   printf(TAG_GTM_IN "Wait to receive request. iPktLen:%d \n", iPktLen);
-  
-  iRetVal = SocketUDP_RecvFrom(phSock, pPktBuf, iPktLen,
-          phClientAddr, piLenCliAddr);
+  //iRetVal = SocketUDP_ClientRecv(phSockObj, pPktBuf, iPktLen);
 
-  // if (iRetVal < 0 ) { goto ret_err; } // If no client, it will be -1, it is okay to retry as a server
+  iRetVal = SocketUDP_RecvFrom(phSock, pPktBuf, iPktLen, phCliAddr, piLenAddr);
+
+  if (iRetVal < 0 ) { goto ret_err; } // If no client, it will be -1, it is okay to retry as a server
 
   printf(TAG_GTM_IN "Received request of len:%d\n", iRetVal);
 
@@ -162,11 +162,11 @@ int GTMapInput_Init(GTMapObject *pGTMapObj)
   memcpy(cIPAddr, SOCK_IP_GTMAP, strlen(SOCK_IP_GTMAP));
 
   iRetVal = SocketUDP_InitServer(phSock, phServAddr, iPortNum, cIPAddr);
-
   if (iRetVal != 0) {
     printf("Error: In SocketUDP_InitServer\n");
     return -1;
   }
+  SocketUDP_PrintIpPort(phSock, "Init");
 
   printf("SocketUDP_InitServer... OK\n");
   return 0;
