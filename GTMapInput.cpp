@@ -84,7 +84,7 @@ int GTMapInput_GetRequest(GTMapObject *pGTMapObj)
   *piLenAddr = sizeof(sockaddr_in);
 
   // RECEIVE STEREO PACKET DATA
-  printf(TAG_GTM_IN "Wait to receive request. iPktLen:%d \n", iPktLen);
+  printf(TAG_GTM_IN "Wait to receive request. iPktLen:%d, addr:%d, len:%d \n", iPktLen, phCliAddr, *piLenAddr);
   //iRetVal = SocketUDP_ClientRecv(phSockObj, pPktBuf, iPktLen);
 
   iRetVal = SocketUDP_RecvFrom(phSock, pPktBuf, iPktLen, phCliAddr, piLenAddr);

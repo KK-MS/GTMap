@@ -27,6 +27,12 @@
 #define REQ_IMAGES       "stereo_images"
 #define REQ_FRAME_LEFT   "frame_left"
 #define REQ_FRAME_RIGHT  "frame_right"
+#define REQ_TRAFFISIGNS  "trafficSigns"
+
+#define REQ_GTMAP_BASE    (400u)
+#define REQ_GTMAP_MARKS   (REQ_GTMAP_BASE + 1u)
+#define REQ_GTMAP_CALC    (REQ_GTMAP_BASE + 2u)
+
 #define MAX_REQ_SIZE MAX_FRAME_SIZE
 
 typedef unsigned char uchar;
@@ -142,6 +148,4 @@ typedef struct LocalizePacket
 {
 	// Metadata with localized values stored
 	Metadata stMetaPkt;
-
 }LocalizePacket;
-

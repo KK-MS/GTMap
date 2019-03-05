@@ -48,6 +48,12 @@ int GTMapExecute_Terminate(GTMapObject *pGTMapObject);
 int GTMapInput_Init(GTMapObject *pGTMapObj);
 int GTMapInput_GetRequest(GTMapObject *pGTMapObj);
 
+
+int GTMapOutput_SendMarks(GTMapObject *pGTMapObj);
+int GTMapOutput_SendCalc(GTMapObject *pGTMapObj);
+
+int GTMapProcess_GetMarks(GTMapObject *pGTMapObj);
+
 // GTMap output processing function declarations
 // Network related API declarations
 int SocketUDP_PrintIpPort(SOCKET *phSock, const char *pTagName);

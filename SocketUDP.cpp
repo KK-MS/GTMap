@@ -13,7 +13,6 @@
 #include <winsock2.h>
 #include <ws2tcpip.h> // getaddrinfo, includes #include <winsock2.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "SocketUDP.h"
 
@@ -33,16 +32,16 @@ static SOCKADDR_IN servaddr;
 
 int SocketUDP_PrintIpPort(SOCKET *phSock, const char *pTagName) 
 {
-	struct sockaddr_in sin;
-	int len = sizeof(sin);
+  struct sockaddr_in sin;
+  int len = sizeof(sin);
 
-	if (getsockname(*phSock, (struct sockaddr *)&sin, &len) == -1) {
-		perror("getsockname");
-		return -1;
-	}
+  if (getsockname(*phSock, (struct sockaddr *)&sin, &len) == -1) {
+    perror("getsockname");
+    return -1;
+  }
 
-	printf(TAG_SOCK"[%s] IP:Port %s:%d\n", pTagName, inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
-	return 0;
+  printf(TAG_SOCK"[%s] IP:Port %s:%d\n", pTagName, inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
+  return 0;
 }
 
 int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
@@ -66,8 +65,9 @@ int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
 
     printf(TAG_SOCK "B4 RecvFrom: len:%d AccLen:%d\n", iRxLen, iAccRxLen);
     iRetVal = recvfrom(*phSock, pRecvBuf, iRxLen, 0, pSockCliAddr, pSockSize);
-	SocketUDP_PrintIpPort(phSock, "RecvFrom");
-	if (iRetVal < 0) { return -1; }
+    SocketUDP_PrintIpPort(phSock, "RecvTo");
+    printf(TAG_SOCK"[%s] IP:Port %s:%d\n", "client details:", inet_ntoa(((struct sockaddr_in *)pSockCliAddr)->sin_addr), ntohs(((struct sockaddr_in *)pSockCliAddr)->sin_port));
+    if (iRetVal < 0) { return -1; }
 
     pRecvBuf  += iRetVal;
     iAccRxLen += iRetVal;
@@ -129,9 +129,9 @@ int SocketUDP_ClientRecv(SockObject *pSockObj, char *pDataBuf, int iDataSize)
 
 int SocketUDP_ClientSend(SockObject *pSockObj, char *pDataBuf, int iDataSize)
 {
-	SOCKET *phSock = &pSockObj->hSock;
-	sockaddr *phCliAddr = &pSockObj->hClientAddr;
-	int iSockSize = pSockObj->iLenClientAddr;
+  SOCKET *phSock = &pSockObj->hSock;
+  sockaddr *phCliAddr = &pSockObj->hClientAddr;
+  int iSockSize = pSockObj->iLenClientAddr;
 
   return SocketUDP_SendTo(phSock, pDataBuf, iDataSize, (sockaddr *)phCliAddr, iSockSize);
 

@@ -35,10 +35,24 @@ void GTMapExecute_Scheduler(void *param)
 		iRetVal = GTMapInput_GetRequest(pGTMapObject);
 		if (iRetVal) { goto err_ret; }
 
+        printf("Request:%d\n",pGTMapObject->pGTMapPacket->iRequestType);
+
+        // Process request iRequestType
+        switch(pGTMapObject->pGTMapPacket->iRequestType) {
+		case REQ_GTMAP_MARKS:
+            printf("In REQ_GTMAP_MARKS\n");
+			iRetVal = GTMapProcess_GetMarks(pGTMapObject);
+		    iRetVal = GTMapOutput_SendMarks(pGTMapObject);
+			break;
+		case REQ_GTMAP_CALC:
+			iRetVal = GTMapOutput_SendCalc(pGTMapObject);
+			break;
+        }
+
 		//iRetVal = GTMapProcess_JpegToRaw(pGTMapObject);
 		//if (iRetVal) { goto err_ret; }
 
-		Sleep(10);
+		Sleep(30);
 	}
 
 err_ret:
