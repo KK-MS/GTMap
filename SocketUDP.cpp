@@ -63,15 +63,15 @@ int SocketUDP_RecvFrom(SOCKET *phSock, char *pDataBuf, int iDataSize,
 
     if (iRxLen > MAX_UDP_DATA_SIZE) { iRxLen = MAX_UDP_DATA_SIZE; }
 
-    printf(TAG_SOCK "B4 RecvFrom: len:%d AccLen:%d\n", iRxLen, iAccRxLen);
+    printf(TAG_SOCK "B4 RecvFrom: ReqLen:%d len:%d AccLen:%d\n", iDataSize, iRxLen, iAccRxLen);
     iRetVal = recvfrom(*phSock, pRecvBuf, iRxLen, 0, pSockCliAddr, pSockSize);
     SocketUDP_PrintIpPort(phSock, "RecvTo");
-    printf(TAG_SOCK"[%s] IP:Port %s:%d\n", "client details:", inet_ntoa(((struct sockaddr_in *)pSockCliAddr)->sin_addr), ntohs(((struct sockaddr_in *)pSockCliAddr)->sin_port));
+    printf(TAG_SOCK"[%s] IP:Port %s:%d\n", "Remote details:", inet_ntoa(((struct sockaddr_in *)pSockCliAddr)->sin_addr), ntohs(((struct sockaddr_in *)pSockCliAddr)->sin_port));
     if (iRetVal < 0) { return -1; }
 
     pRecvBuf  += iRetVal;
     iAccRxLen += iRetVal;
-    printf(TAG_SOCK "A4 RecvFrom: len:%d AccLen:%d\n", iRxLen, iAccRxLen);
+    printf(TAG_SOCK "A4 RecvFrom: len:%d AccLen:%d, iRetVal:%d\n", iRxLen, iAccRxLen, iRetVal);
 
     if (iRetVal < iRxLen) { break; }
   }
@@ -169,7 +169,6 @@ int SocketUDP_InitClient(SOCKET *phSock, SOCKADDR_IN *phServAddr,
   phServAddr->sin_family      = AF_INET;
   phServAddr->sin_port        = htons(iPortNum); //Port to connect on
   phServAddr->sin_addr.s_addr = inet_addr(pServerIP);
-  phServAddr->sin_port        = IPPROTO_UDP;
 
   // connect to server 
   iRetVal = connect(*phSock, (struct sockaddr *)phServAddr, sizeof(SOCKADDR_IN));

@@ -52,7 +52,7 @@ void GTMapExecute_Scheduler(void *param)
 		//iRetVal = GTMapProcess_JpegToRaw(pGTMapObject);
 		//if (iRetVal) { goto err_ret; }
 
-		Sleep(30);
+		Sleep(10);
 	}
 
 err_ret:
