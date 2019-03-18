@@ -61,7 +61,7 @@ int GTMapInput_GetRequest(GTMapObject *pGTMapObj)
   char *pPktBuf;
 
   // REQUEST holder
-  char ucReqMsg[11] = REQ_STREAM; // +1 to add null at last
+  char ucReqMsg[17] = REQ_TS_INFO;
 
   // Packet details
   GTMapPacket    *pGTMapPkt;
@@ -84,14 +84,17 @@ int GTMapInput_GetRequest(GTMapObject *pGTMapObj)
   *piLenAddr = sizeof(sockaddr_in);
 
   // RECEIVE STEREO PACKET DATA
-  printf(TAG_GTM_IN "Wait to receive request. iPktLen:%d, addr:%d, len:%d \n", iPktLen, phCliAddr, *piLenAddr);
+  printf(TAG_GTM_IN "Wait to receive request. iPktLen:%d, addr:%d, sockAddrSize:%d \n", iPktLen, phCliAddr, *piLenAddr);
   //iRetVal = SocketUDP_ClientRecv(phSockObj, pPktBuf, iPktLen);
-
+  SocketUDP_PrintIpPort(phSock, "GetReq");
   iRetVal = SocketUDP_RecvFrom(phSock, pPktBuf, iPktLen, phCliAddr, piLenAddr);
 
   if (iRetVal < 0 ) { goto ret_err; } // If no client, it will be -1, it is okay to retry as a server
 
-  printf(TAG_GTM_IN "Received request of len:%d\n", iRetVal);
+  printf(TAG_GTM_IN "Received request of len:%d, ReqType:%d\n", iRetVal, pGTMapPkt->iRequestType);
+
+  
+  printf(TAG_GTM_IN " GGGGGGGG TS:%d,\n", pGTMapPkt->stImuMetadata.ulTimestamp);
 
   if (iRetVal > 0) {
 

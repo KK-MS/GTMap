@@ -10,8 +10,9 @@
 
 #pragma comment (lib, "Ws2_32.lib")
 
-
 // MACROS
+
+// STRUCTURE
 
 //
 // GTMap needs:
@@ -27,7 +28,6 @@
 //
 typedef struct GTMapObjectStruct {
 	// INPUT & OUTPUT
-
 	// GTMap packet
 	GTMapPacket *pGTMapPacket;
 

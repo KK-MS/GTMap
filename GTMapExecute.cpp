@@ -30,7 +30,7 @@ void GTMapExecute_Scheduler(void *param)
 	printf(TAG_GTM "In GTMap_scheduler\n");
 
 	while (1) {
-
+		printf("\n-----------------------------\n\n");
 		// INPUT: Metadata + JPEG Frames (Right & Left)
 		iRetVal = GTMapInput_GetRequest(pGTMapObject);
 		if (iRetVal) { goto err_ret; }
